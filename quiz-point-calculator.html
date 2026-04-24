@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Point Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f3ee;
+      --surface: #ffffff;
+      --surface-2: #f0ede7;
+      --border: #ddd9d1;
+      --border-strong: #c4bfb5;
+      --text: #1a1916;
+      --text-muted: #6b6760;
+      --text-faint: #9c9890;
+      --accent: #2d5a3d;
+      --accent-light: #e8f0ea;
+      --accent-text: #1e3f2a;
+      --warn: #8b3a1a;
+      --warn-light: #fdf0eb;
+      --warn-border: #e8b99a;
+      --info: #1a3d5a;
+      --info-light: #e8f0f8;
+      --info-border: #9ac0dd;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+    }
+
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    h1 strong {
+      font-weight: 500;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 1.25rem;
+    }
+
+    .fields-row {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    input[type="number"] {
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(45, 90, 61, 0.1);
+      background: var(--surface);
+    }
+
+    /* Metrics */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .metric {
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+
+    .metric .m-label {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    .metric .m-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .metric .m-value.warn { color: var(--warn); }
+    .metric .m-value.ok { color: var(--accent); }
+
+    /* Custom groups */
+    .group-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .group-row .g-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .group-row .g-field label {
+      font-size: 11px;
+      color: var(--text-faint);
+    }
+
+    .group-row input[type="number"] {
+      font-size: 14px;
+      padding: 8px 12px;
+      width: 110px;
+    }
+
+    .group-row .sep {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding-top: 16px;
+    }
+
+    .btn-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-faint);
+      font-size: 18px;
+      line-height: 1;
+      padding: 4px 6px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      margin-top: 16px;
+    }
+
+    .btn-remove:hover { color: var(--warn); background: var(--warn-light); }
+
+    .btn-add {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s, border-color 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn-add:hover { border-color: var(--accent); }
+
+    .empty-groups {
+      font-size: 13px;
+      color: var(--text-faint);
+      padding: 10px 0;
+    }
+
+    /* Results table */
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .result-table th {
+      text-align: left;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      padding: 0 10px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    .result-table tr:last-child td { border-bottom: none; }
+
+    .result-table tr.highlight td { background: var(--accent-light); }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    .tag-custom {
+      background: var(--info-light);
+      color: var(--info);
+      border: 1px solid var(--info-border);
+    }
+
+    .tag-remaining {
+      background: var(--accent-light);
+      color: var(--accent-text);
+      border: 1px solid #b2ccb9;
+    }
+
+    .pts-each {
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+    }
+
+    /* Alerts */
+    .alert {
+      font-size: 13px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      margin-top: 1rem;
+      border: 1px solid;
+      line-height: 1.5;
+    }
+
+    .alert-warn { background: var(--warn-light); color: var(--warn); border-color: var(--warn-border); }
+    .alert-ok { background: var(--accent-light); color: var(--accent-text); border-color: #b2ccb9; }
+    .alert-info { background: var(--info-light); color: var(--info); border-color: var(--info-border); }
+
+    .alert strong { font-weight: 500; }
+
+    @media (max-width: 500px) {
+      .group-row { gap: 8px; }
+      .group-row input[type="number"] { width: 90px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="eyebrow">Grading tool</p>
+      <h1>Quiz <strong>Point</strong> Calculator</h1>
+    </header>
+
+    <!-- Setup -->
+    <div class="card">
+      <p class="card-title">Quiz setup</p>
+      <div class="fields-row">
+        <div class="field">
+          <label for="total-q">Total questions</label>
+          <input type="number" id="total-q" min="1" value="10" />
+        </div>
+        <div class="field">
+          <label for="total-pts">Total points</label>
+          <input type="number" id="total-pts" min="1" value="100" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics" id="metrics"></div>
+
+    <!-- Custom groups -->
+    <div class="card">
+      <p class="card-title">Custom point groups <span style="font-weight:300;text-transform:none;letter-spacing:0;font-size:12px;color:var(--text-faint)">— optional</span></p>
+      <div id="group-rows"></div>
+      <button class="btn-add" onclick="addGroup()">+ Add group</button>
+    </div>
+
+    <!-- Results -->
+    <div id="result-area"></div>
+  </div>
+
+  <script>
+    let groups = [];
+    let uid = 0;
+
+    function num(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+    function fmt(n) {
+      if (n === Math.floor(n)) return n.toString();
+      return parseFloat(n.toFixed(4)).toString();
+    }
+
+    function addGroup() {
+      groups.push({ id: ++uid, count: '', pts: '' });
+      renderGroups();
+      recalc();
+    }
+
+    function removeGroup(id) {
+      groups = groups.filter(g => g.id !== id);
+      renderGroups();
+      recalc();
+    }
+
+    function updateGroup(id, field, val) {
+      const g = groups.find(x => x.id === id);
+      if (g) g[field] = parseFloat(val) || '';
+      recalc();
+    }
+
+    function renderGroups() {
+      const container = document.getElementById('group-rows');
+      if (groups.length === 0) {
+        container.innerHTML = '<p class="empty-groups">No custom groups yet. Click "+ Add group" to assign specific point values to a set of questions.</p>';
+        return;
+      }
+      container.innerHTML = groups.map((g, i) => `
+        <div class="group-row" id="grow-${g.id}">
+          <div class="g-field">
+            <label>Questions</label>
+            <input type="number" min="1" placeholder="count" value="${g.count}" oninput="updateGroup(${g.id},'count',this.value)" />
+          </div>
+          <span class="sep">worth</span>
+          <div class="g-field">
+            <label>Pts each</label>
+            <input type="number" min="0" step="0.01" placeholder="pts" value="${g.pts}" oninput="updateGroup(${g.id},'pts',this.value)" />
+          </div>
+          <span class="sep">pts each</span>
+          <button class="btn-remove" onclick="removeGroup(${g.id})" title="Remove group">×</button>
+        </div>
+      `).join('');
+    }
+
+    function recalc() {
+      const totalQ = num('total-q');
+      const totalPts = num('total-pts');
+      const defaultPPQ = totalQ > 0 ? totalPts / totalQ : 0;
+
+      let customQ = 0, customPts = 0;
+      for (const g of groups) {
+        const c = parseFloat(g.count) || 0;
+        const p = parseFloat(g.pts) || 0;
+        customQ += c;
+        customPts += c * p;
+      }
+
+      const remainQ = totalQ - customQ;
+      const remainPts = totalPts - customPts;
+      const remainPPQ = remainQ > 0 ? remainPts / remainQ : 0;
+      const overQ = customQ > totalQ;
+      const overPts = remainPts < 0;
+
+      // Metrics
+      document.getElementById('metrics').innerHTML = `
+        <div class="metric">
+          <div class="m-label">Default pts per question</div>
+          <div class="m-value">${fmt(defaultPPQ)}</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Custom questions assigned</div>
+          <div class="m-value ${overQ ? 'warn' : ''}">${customQ} <span style="font-size:13px;font-weight:400;color:var(--text-faint)">/ ${totalQ}</span></div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Remaining questions</div>
+          <div class="m-value ${remainQ < 0 ? 'warn' : 'ok'}">${Math.max(0, remainQ)}</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Points left to assign</div>
+          <div class="m-value ${overPts ? 'warn' : ''}">${fmt(Math.max(0, remainPts))}</div>
+        </div>
+      `;
+
+      // Results
+      let html = '';
+
+      if (groups.length > 0) {
+        html += `<div class="card" style="padding: 0; overflow: hidden;">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th>Group</th>
+                <th>Questions</th>
+                <th>Pts each</th>
+                <th>Group total</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+        groups.forEach((g, i) => {
+          const c = parseFloat(g.count) || 0;
+          const p = parseFloat(g.pts) || 0;
+          html += `<tr>
+            <td><span class="tag tag-custom">Group ${i + 1}</span></td>
+            <td>${c}</td>
+            <td><span class="pts-each">${fmt(p)}</span></td>
+            <td>${fmt(c * p)}</td>
+          </tr>`;
+        });
+
+        if (remainQ > 0) {
+          html += `<tr class="highlight">
+            <td><span class="tag tag-remaining">Remaining</span></td>
+            <td>${remainQ}</td>
+            <td><span class="pts-each">${remainPts >= 0 ? fmt(remainPPQ) : '—'}</span></td>
+            <td>${fmt(Math.max(0, remainPts))}</td>
+          </tr>`;
+        }
+
+        html += `</tbody></table></div>`;
+      }
+
+      // Alert
+      if (overQ) {
+        html += `<div class="alert alert-warn">Custom groups assign ${customQ} questions but the quiz only has ${totalQ}. Reduce the question counts by <strong>${customQ - totalQ}</strong>.</div>`;
+      } else if (overPts) {
+        html += `<div class="alert alert-warn">Custom groups use ${fmt(customPts)} points but the quiz is only worth ${totalPts}. Reduce assigned point values by <strong>${fmt(Math.abs(remainPts))}</strong>.</div>`;
+      } else if (groups.length > 0 && remainQ === 0 && Math.abs(remainPts) < 0.001) {
+        html += `<div class="alert alert-ok">All ${totalQ} questions and ${totalPts} points are fully accounted for.</div>`;
+      } else if (groups.length > 0 && remainQ > 0 && remainPts >= 0) {
+        html += `<div class="alert alert-ok">Each of the <strong>${remainQ} remaining questions</strong> should be worth <strong>${fmt(remainPPQ)} pts</strong> to reach a total of ${totalPts} points.</div>`;
+      } else if (groups.length === 0 && totalQ > 0) {
+        html += `<div class="alert alert-info">With no custom groups, each of the <strong>${totalQ} questions</strong> is worth <strong>${fmt(defaultPPQ)} pts</strong>.</div>`;
+      }
+
+      document.getElementById('result-area').innerHTML = html;
+    }
+
+    document.getElementById('total-q').addEventListener('input', recalc);
+    document.getElementById('total-pts').addEventListener('input', recalc);
+
+    renderGroups();
+    recalc();
+  </script>
+</body>
+</html>
